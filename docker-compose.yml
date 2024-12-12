@@ -1,0 +1,60 @@
+
+volumes:
+        wordpress:
+                name: wordpress
+                driver: local
+                driver_opts:
+                        #device: /Users/linuseschenbach/Desktop/42/inception/src/requirements/wordpress/wpdb
+                        o: bind
+                        type: none
+        mariadb:
+                name: mariadb
+                driver: local
+                driver_opts:
+                        device: /Users/linuseschenbach/Desktop/42/inception/src/requirements/mariadb/db
+                        o: bind
+                        type: none
+
+
+networks:
+        inception:
+          name: inception
+          driver: bridge
+
+services:
+    nginx:
+        container_name: nginx
+        build: ./requirements/nginx/.
+        image: nginx:latest #change later to :final
+        ports:
+        - "443:443"
+        depends_on:
+        - wordpress
+        volumes:
+        - /Users/linuseschenbach/Desktop/42/inception/src/requirements/wordpress/wpdb:/var/www/html #change later for school pc to /home/leschenb/data
+        networks:
+        - inception
+        env_file:
+        - .env
+        restart: always
+    wordpress:
+        container_name: wordpress
+        build: ./requirements/wordpress/.
+        image: wordpress #add :final later
+        depends_on:
+        - mariadb
+        volumes:
+        - /Users/linuseschenbach/Desktop/42/inception/src/requirements/wordpress/wpdb:/var/www/html
+        env_file: .env
+        networks:
+        - inception
+        restart: always
+    mariadb:
+        container_name: mariadb
+        build: ./requirements/mariadb/.
+        image: mariadb
+        volumes:
+            - mariadb:/var/lib/mysql
+        env_file: .env
+        networks:
+        - inception
